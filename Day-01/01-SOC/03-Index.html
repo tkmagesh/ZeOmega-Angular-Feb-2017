@@ -41,14 +41,25 @@
 
 		//View
 		$(function(){
-			var calculator = new SalaryCalculator();
+			window.calculator = new SalaryCalculator();
+
+			$("#txtBasic").change(function(){
+				calculator.basic = $("#txtBasic").val().toInt();
+			});
+
+			$("#txtHra").change(function(){
+				calculator.hra = $("#txtHra").val().toInt();
+			});
+
+			$("#txtDa").change(function(){
+				calculator.da = $("#txtDa").val().toInt();
+			});
+
+			$("#rangeTax").change(function(){
+				calculator.tax = $("#rangeTax").val().toInt();
+			});
 
 			$("#btnCalculate").click(function(){
-				
-				calculator.basic = $("#txtBasic").val().toInt(),
-				calculator.hra = $("#txtHra").val().toInt(),
-				calculator.da = $("#txtDa").val().toInt(),
-				calculator.tax = $("#rangeTax").val().toInt();
 
 				calculator.calculate();
 

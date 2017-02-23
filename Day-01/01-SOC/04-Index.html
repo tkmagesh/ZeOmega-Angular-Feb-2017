@@ -32,32 +32,51 @@
 			this.da = 0;
 			this.tax = 0;
 			this.salary = 0;
+
+			this.onSalaryChange = null;
 		}
 		SalaryCalculator.prototype.calculate = function(){
 			var gross = this.basic + this.hra + this.da;
 			var net = gross * ((100-this.tax)/100);
 			this.salary = net;
+			if (typeof this.onSalaryChange === 'function')
+				this.onSalaryChange();
 		}
 
 		//View
 		$(function(){
-			var calculator = new SalaryCalculator();
+			window.calculator = new SalaryCalculator();
+
+			$("#txtBasic").change(function(){
+				calculator.basic = $("#txtBasic").val().toInt();
+			});
+
+			$("#txtHra").change(function(){
+				calculator.hra = $("#txtHra").val().toInt();
+			});
+
+			$("#txtDa").change(function(){
+				calculator.da = $("#txtDa").val().toInt();
+			});
+
+			$("#rangeTax").change(function(){
+				calculator.tax = $("#rangeTax").val().toInt();
+			});
 
 			$("#btnCalculate").click(function(){
-				
-				calculator.basic = $("#txtBasic").val().toInt(),
-				calculator.hra = $("#txtHra").val().toInt(),
-				calculator.da = $("#txtDa").val().toInt(),
-				calculator.tax = $("#rangeTax").val().toInt();
 
 				calculator.calculate();
 
-				$("#divResult").html(calculator.salary);
+				
 			});
 
 			$("#rangeTax").change(function(){
 				$("#spanTax").html(this.value);
 			});
+
+			calculator.onSalaryChange = function(){
+				$("#divResult").html(calculator.salary);
+			}
 		});
 
 	</script>
