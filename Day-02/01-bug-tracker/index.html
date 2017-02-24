@@ -11,10 +11,25 @@
 		3. Toggle the status of a bug - done
 		4. Remove closed bugs - done
 		5. Display statistics - done
-		6. Search for the bugs
-		7. Sort the bugs
-		8. Improvise the bug display
+		6. Search for the bugs - done
+		7. Sort the bugs - done - done
+		8. Improvise the bug display - done
 		9. Persist the bugs in 'window.localStorage'
+			window.localStorage
+			===================
+			* key/value store
+			* both key and value must be strings
+				- Use angular.toJson() and angular.fromJson() for serialization and deserailization of the bug objects
+			* key has to be unique
+			* APIs
+			======
+				- setItem(key, value)
+				- getItem(key)   //=>  value
+				- removeItem(key)
+				- key(index)     //=> key at index
+				- clear()
+				- length
+
 		10. Display 'createdAt' for every bug
 		11. Persist the bugs in the server
 		12. Make the buygs accessible through unique (bookmarkable) url.
@@ -61,23 +76,32 @@
 	<script>
 		var bugTrackerApp = angular.module("bugTrackerApp", []);
 
+		bugTrackerApp.value('defaultBugName','[Default Bug]');
 		
-		bugTrackerApp.value("bugOperations", {
-			createNew : function(bugName){
-				return {
-					name : bugName,
-					isClosed : false
-				};
-			},
-			toggle : function(bug){
-				bug.isClosed = !bug.isClosed;
+		bugTrackerApp.factory("bugOperations", function(defaultBugName){
+			return {
+				createNew : function(bugName){
+					
+					return {
+						name : bugName || defaultBugName,
+						isClosed : false
+					};
+				},
+				toggle : function(bug){
+					bug.isClosed = !bug.isClosed;
+				}
 			}
 		});
 
 
 
 		bugTrackerApp.controller('bugsController', function($scope, bugOperations){
-			$scope.bugs = [];
+			
+			$scope.bugs = [
+				bugOperations.createNew('Server communication failure'),
+				bugOperations.createNew('User actions not recognized'),
+				bugOperations.createNew('Data validation error')
+			];
 			
 			$scope.addNew = function(bugName){
 				var newBug = bugOperations.createNew(bugName);
@@ -88,42 +112,59 @@
 				bugOperations.toggle(bug);
 			};
 
-			$scope.getClosedCount = function(){
-				var closedCount = 0;
-				for(var i=0; i < $scope.bugs.length; i++)
-					if($scope.bugs[i].isClosed)
-						++closedCount;
-				return closedCount;
-			};
-
+			
 			$scope.removeClosed = function(){
 				for(var i=$scope.bugs.length-1; i >=0; i--)
 					if ($scope.bugs[i].isClosed)
 						$scope.bugs.splice(i,1);
 			};
+		});
+
+		bugTrackerApp.value("defaultTrimLength", 40);
+
+		bugTrackerApp.filter("trimText", function(defaultTrimLength){
+			return function(data, trimLength){
+				trimLength = trimLength || defaultTrimLength;
+				return data.length < trimLength ? data : data.substr(0,trimLength) + '...';
+			};
+		});
+
+		bugTrackerApp.filter('closedCount', function(){
+			return function(bugs){
+				var closedCount = 0;
+				for(var i=0; i < bugs.length; i++)
+					if(bugs[i].isClosed)
+						++closedCount;
+				return closedCount;
+			}
 		})
 	</script>
 </head>
 <body ng-app="bugTrackerApp">
 	<h1>Bug Tracker</h1>
 	<hr>
+	<input type="text" ng-model="dummy.name">
 	<div class="content" ng-controller="bugsController">
 		<section class="stats">
-			<span class="closed">{{getClosedCount()}}</span>
+			<span class="closed">{{ bugs | closedCount }}</span>
 			<span> / </span>
 			<span ng-bind="bugs.length"></span>
 		</section>
 		<section class="sort">
 			<label for="">Order By :</label>
-			<input type="text" name="" id="">
+			<select ng-model="sortBy">
+				<option value="name">Name</option>
+				<option value="isClosed">Status</option>
+			</select>
 			<label for="">Descending ? :</label>
-			<input type="checkbox" name="" id="">
+			<input type="checkbox" ng-model="sortOrder">
 		</section>
 		<section class="search">
 			<label for="">Search :</label>
-			<input type="text" name="" id="">
+			<input type="text" ng-model="searchBug.name">
 			<label for=""> Closed ? :</label>
-			<input type="checkbox" name="" id="">
+			<input type="checkbox" ng-model="searchBug.isClosed">
+			<input type="button" value="Show All" ng-click="searchBug.isClosed=''">
 		</section>
 		<section class="edit">
 			<label for="">New Bug :</label>
@@ -132,8 +173,10 @@
 		</section>
 		<section class="list">
 			<ol>
-				<li ng-repeat="bug in bugs track by $index">
-					<span class="bugname" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">{{bug}}</span>
+				<li ng-repeat="bug in ( bugs | filter:searchBug | orderBy:sortBy:sortOrder) ">
+					<span class="bugname" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">
+						{{bug.name | trimText:30}}
+					</span>
 					<div class="datetime">[CreatedAt]</div>
 				</li>
 				
