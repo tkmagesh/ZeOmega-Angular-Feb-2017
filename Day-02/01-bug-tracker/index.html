@@ -8,9 +8,9 @@
 	=========
 		1. Add a new bug - done
 		2. List the bugs - done
-		3. Toggle the status of a bug
-		4. Remove closed bugs
-		5. Display statistics
+		3. Toggle the status of a bug - done
+		4. Remove closed bugs - done
+		5. Display statistics - done
 		6. Search for the bugs
 		7. Sort the bugs
 		8. Improvise the bug display
@@ -60,11 +60,47 @@
 	<script src="angular.js"></script>
 	<script>
 		var bugTrackerApp = angular.module("bugTrackerApp", []);
-		bugTrackerApp.controller('bugsController', function($scope){
-			$scope.bugs = [];
-			$scope.addNew = function(bugName){
-				$scope.bugs.push(bugName);
+
+		
+		bugTrackerApp.value("bugOperations", {
+			createNew : function(bugName){
+				return {
+					name : bugName,
+					isClosed : false
+				};
+			},
+			toggle : function(bug){
+				bug.isClosed = !bug.isClosed;
 			}
+		});
+
+
+
+		bugTrackerApp.controller('bugsController', function($scope, bugOperations){
+			$scope.bugs = [];
+			
+			$scope.addNew = function(bugName){
+				var newBug = bugOperations.createNew(bugName);
+				$scope.bugs.push(newBug);
+			};
+
+			$scope.toggle = function(bug){
+				bugOperations.toggle(bug);
+			};
+
+			$scope.getClosedCount = function(){
+				var closedCount = 0;
+				for(var i=0; i < $scope.bugs.length; i++)
+					if($scope.bugs[i].isClosed)
+						++closedCount;
+				return closedCount;
+			};
+
+			$scope.removeClosed = function(){
+				for(var i=$scope.bugs.length-1; i >=0; i--)
+					if ($scope.bugs[i].isClosed)
+						$scope.bugs.splice(i,1);
+			};
 		})
 	</script>
 </head>
@@ -73,7 +109,7 @@
 	<hr>
 	<div class="content" ng-controller="bugsController">
 		<section class="stats">
-			<span class="closed">2</span>
+			<span class="closed">{{getClosedCount()}}</span>
 			<span> / </span>
 			<span ng-bind="bugs.length"></span>
 		</section>
@@ -97,12 +133,12 @@
 		<section class="list">
 			<ol>
 				<li ng-repeat="bug in bugs track by $index">
-					<span class="bugname">{{bug}}</span>
+					<span class="bugname" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">{{bug}}</span>
 					<div class="datetime">[CreatedAt]</div>
 				</li>
 				
 			</ol>
-			<input type="button" value="Remove Closed">
+			<input type="button" value="Remove Closed" ng-click="removeClosed()">
 		</section>
 	</div>
 </body>
