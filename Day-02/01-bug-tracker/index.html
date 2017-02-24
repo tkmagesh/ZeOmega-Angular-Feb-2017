@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Bug Tracker</title>
+	<!-- 
+	Use Cases
+	=========
+		1. Add a new bug - done
+		2. List the bugs - done
+		3. Toggle the status of a bug
+		4. Remove closed bugs
+		5. Display statistics
+		6. Search for the bugs
+		7. Sort the bugs
+		8. Improvise the bug display
+		9. Persist the bugs in 'window.localStorage'
+		10. Display 'createdAt' for every bug
+		11. Persist the bugs in the server
+		12. Make the buygs accessible through unique (bookmarkable) url.
+	 -->
+	<style>
+		body{
+			margin : 30px;
+		}
+		section{
+			margin-bottom: 10px;
+
+		}
+		.closed{
+			color : red;
+			text-decoration: line-through;;
+			font-style: italic;
+			font-weight: bold;
+		}
+		ol{
+			list-style: none;
+			width: 500px;
+			-webkit-padding-start : 0px;
+		}
+		.stats, .bugname{
+			font-size: 22pt;
+		}
+		li{
+			border : 1px solid gray;
+			background-color: #e7e7e7;
+			padding: 5px;
+			border-radius: 5px;
+			margin-bottom: 10px;
+
+		}
+		.bugname{
+			cursor: pointer;
+		}
+		.datetime{
+			font-style: italic;
+			text-align  : right;
+		}
+	</style>
+	<script src="angular.js"></script>
+	<script>
+		var bugTrackerApp = angular.module("bugTrackerApp", []);
+		bugTrackerApp.controller('bugsController', function($scope){
+			$scope.bugs = [];
+			$scope.addNew = function(bugName){
+				$scope.bugs.push(bugName);
+			}
+		})
+	</script>
+</head>
+<body ng-app="bugTrackerApp">
+	<h1>Bug Tracker</h1>
+	<hr>
+	<div class="content" ng-controller="bugsController">
+		<section class="stats">
+			<span class="closed">2</span>
+			<span> / </span>
+			<span ng-bind="bugs.length"></span>
+		</section>
+		<section class="sort">
+			<label for="">Order By :</label>
+			<input type="text" name="" id="">
+			<label for="">Descending ? :</label>
+			<input type="checkbox" name="" id="">
+		</section>
+		<section class="search">
+			<label for="">Search :</label>
+			<input type="text" name="" id="">
+			<label for=""> Closed ? :</label>
+			<input type="checkbox" name="" id="">
+		</section>
+		<section class="edit">
+			<label for="">New Bug :</label>
+			<input type="text" ng-model="newBugName">
+			<input type="button" value="Add" ng-click="addNew(newBugName)">
+		</section>
+		<section class="list">
+			<ol>
+				<li ng-repeat="bug in bugs track by $index">
+					<span class="bugname">{{bug}}</span>
+					<div class="datetime">[CreatedAt]</div>
+				</li>
+				
+			</ol>
+			<input type="button" value="Remove Closed">
+		</section>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
