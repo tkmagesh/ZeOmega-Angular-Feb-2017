@@ -30,23 +30,10 @@
 		myApp.controller("mathCalculatorController2", function($scope){
 			$scope.calculator = new MathCalculator();
 
-			$scope.operator = '';
+			
 
-			$scope.calculate = function(){
-				switch($scope.operator){
-					case 'add':
-						$scope.calculator.add();
-						break;
-					case 'subtract':
-						$scope.calculator.subtract();
-						break;
-					case 'multiply':
-						$scope.calculator.multiply();
-						break;
-					case 'divide':
-						$scope.calculator.divide();
-						break;
-				}
+			$scope.calculate = function(op){
+				$scope.calculator[op]();
 			}
 		})
 	</script>
@@ -76,7 +63,7 @@
 			<option value="divide">Divide</option>
 		</select>
 		<input type="number" ng-model="calculator.number2">
-		<input type="button" value="Calculate" ng-click="calculate()">
+		<input type="button" value="Calculate" ng-click="calculate(operator)">
 		<div ng-bind="calculator.result">[Result]</div>
 	</div>
 </body>
