@@ -1,0 +1,26 @@
+{
+  "bugs": [
+    {
+      "id": 1,
+      "name": "Server communication failure",
+      "isClosed": true,
+      "createdAt": "2016-09-09T06:38:33.530Z"
+    },
+    {
+      "id": 2,
+      "name": "Application not responding to user actions",
+      "isClosed": false,
+      "createdAt": "2016-12-23T09:35:03.401Z"
+    }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "name": "Magesh"
+    },
+    {
+      "id": 2,
+      "name": "Suresh"
+    }
+  ]
+}
