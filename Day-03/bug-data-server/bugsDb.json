@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Data Error",
-      "isClosed": false,
+      "isClosed": true,
       "createdAt": "2017-02-25T10:28:17.569Z"
     },
     {
@@ -11,6 +11,12 @@
       "name": "Server Error",
       "isClosed": false,
       "createdAt": "2017-02-25T10:28:26.299Z"
+    },
+    {
+      "id": 4,
+      "name": "Routing error",
+      "isClosed": false,
+      "createdAt": "2017-02-25T11:23:16.380Z"
     }
   ],
   "employees": [

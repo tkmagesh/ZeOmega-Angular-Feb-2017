@@ -31,7 +31,7 @@
 				- length
 
 		10. Display 'createdAt' for every bug - done
-		11. Persist the bugs in the server
+		11. Persist the bugs in the server - done
 		12. Make the buygs accessible through unique (bookmarkable) url.
 	 -->
 	<style>
@@ -74,13 +74,36 @@
 	</style>
 	<script src="moment.js"></script>
 	<script src="angular.js"></script>
+	<script src="angular-route.js"></script>
 	<script src="utils.js"></script>
 	<script>
 
 		
 
 
-		var bugTrackerApp = angular.module('bugTrackerApp', ['utils']);
+		var bugTrackerApp = angular.module('bugTrackerApp', ['utils', 'ngRoute']);
+
+		bugTrackerApp.config(function($routeProvider){
+			$routeProvider
+				.when('/bugs', {
+					//template : '<h1>All the bugs will be displayed here</h1>'
+					templateUrl : 'templates/bug-list.template.html',
+					controller : 'bugServerController'
+				})
+				.when('/bugs/details/:id', {
+					//template : '<h1>Info about one bug will be displayed here</h1>'
+					templateUrl : 'templates/bug-details.template.html',
+					controller : 'bugDetailsController'
+				})
+				.when('/bugs/new', {
+					//template : '<h1>All the products will be displayed here</h1>'
+					templateUrl : 'templates/bug-new.template.html',
+					controller : 'newBugController'
+				})
+				.otherwise({
+					redirectTo : '/bugs'
+				});
+		})
 
 		bugTrackerApp.value('defaultBugName','[Default Bug]');
 		
@@ -203,11 +226,19 @@
 					})	
 			}
 
+			function getBug(id){
+				return $http.get('http://localhost:3000/bugs/' + id)
+					.then(function(response){
+						return response.data;
+					})
+			}
+
 			return {
 				getAll : getAllBugs,
 				addNew : addNewBug,
 				toggle : toggleBug,
-				remove : removeBug
+				remove : removeBug,
+				get : getBug
 			}
 
 		})
@@ -222,13 +253,7 @@
 				});
 
 			
-			$scope.addNew = function(bugName){
-				bugService
-					.addNew(bugName)
-					.then(function(newBug){
-						$scope.bugs.push(newBug);
-					})
-			};
+			
 
 			$scope.toggle = function(bug){
 				bugService.toggle(bug);
@@ -249,6 +274,28 @@
 
 
 			}
+		});
+
+		bugTrackerApp.controller('newBugController', function($scope, bugService, $location){
+			$scope.addNew = function(bugName){
+				bugService
+					.addNew(bugName)
+					.then(function(newBug){
+						$location.path('/bugs');
+					})
+			};
+		});
+
+		bugTrackerApp.controller('bugDetailsController', function($scope, bugService, $routeParams){
+			var bugId = $routeParams.id;
+
+			$scope.bug = null;
+
+			bugService
+				.get(bugId)
+				.then(function(bug){
+					$scope.bug = bug;
+				});
 		})
 		
 		bugTrackerApp.filter('closedCount', function(){
@@ -269,46 +316,10 @@
 <body ng-app="bugTrackerApp">
 	<h1>Bug Tracker</h1>
 	<hr>
-	<div class="content" ng-controller="bugServerController">
-		<section class="stats">
-			<span class="closed">{{ bugs | closedCount }}</span>
-			<span> / </span>
-			<span ng-bind="bugs.length"></span>
-		</section>
-		<section class="sort">
-			<label for="">Order By :</label>
-			<select ng-model="sortBy">
-				<option value="name">Name</option>
-				<option value="isClosed">Status</option>
-			</select>
-			<label for="">Descending ? :</label>
-			<input type="checkbox" ng-model="sortOrder">
-		</section>
-		<section class="search">
-			<label for="">Search :</label>
-			<input type="text" ng-model="searchBug.name">
-			<label for=""> Closed ? :</label>
-			<input type="checkbox" ng-model="searchBug.isClosed">
-			<input type="button" value="Show All" ng-click="searchBug.isClosed=''">
-		</section>
-		<section class="edit">
-			<label for="">New Bug :</label>
-			<input type="text" ng-model="newBugName">
-			<input type="button" value="Add" ng-click="addNew(newBugName)">
-		</section>
-		<section class="list">
-			<ol>
-				<li ng-repeat="bug in ( bugs | filter:searchBug | orderBy:sortBy:sortOrder) ">
-					<span class="bugname" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">
-						{{bug.name | trimText:30}}
-					</span>
-					<div class="datetime">{{bug.createdAt | elapsed}}</div>
-				</li>
-				
-			</ol>
-			<input type="button" value="Remove Closed" ng-click="removeClosed()">
-		</section>
-	</div>
+	<ng-view></ng-view>
+
+	<!-- 
+	-->
 </body>
 </html>
 
