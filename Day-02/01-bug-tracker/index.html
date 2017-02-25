@@ -14,7 +14,7 @@
 		6. Search for the bugs - done
 		7. Sort the bugs - done - done
 		8. Improvise the bug display - done
-		9. Persist the bugs in 'window.localStorage'
+		9. Persist the bugs in 'window.localStorage' - done
 			window.localStorage
 			===================
 			* key/value store
@@ -30,7 +30,7 @@
 				- clear()
 				- length
 
-		10. Display 'createdAt' for every bug
+		10. Display 'createdAt' for every bug - done
 		11. Persist the bugs in the server
 		12. Make the buygs accessible through unique (bookmarkable) url.
 	 -->
@@ -72,29 +72,35 @@
 			text-align  : right;
 		}
 	</style>
+	<script src="moment.js"></script>
 	<script src="angular.js"></script>
+	<script src="utils.js"></script>
 	<script>
-		var bugTrackerApp = angular.module("bugTrackerApp", []);
+
+		
+
+
+		var bugTrackerApp = angular.module('bugTrackerApp', ['utils']);
 
 		bugTrackerApp.value('defaultBugName','[Default Bug]');
 		
-		bugTrackerApp.factory("bugOperations", function(defaultBugName){
-			return {
-				createNew : function(id, bugName){
-					
-					return {
-						id : id,
-						name : bugName || defaultBugName,
-						isClosed : false
-					};
-				},
-				toggle : function(bug){
-					bug.isClosed = !bug.isClosed;
-				}
+		bugTrackerApp.service('bugOperations', function(defaultBugName){
+			
+			this.createNew = function(id, bugName){
+				return {
+					id : id,
+					name : bugName || defaultBugName,
+					isClosed : false,
+					createdAt : new Date()
+				};
+			};
+			this.toggle = function(bug){
+				bug.isClosed = !bug.isClosed;
 			}
+			
 		});
 
-		bugTrackerApp.factory("bugStorage", function(bugOperations){
+		bugTrackerApp.factory('bugStorage', function(bugOperations){
 			var maxBugId = 0;
 			var storage = window.localStorage;
 
@@ -162,15 +168,7 @@
 			};
 		});
 
-		bugTrackerApp.value("defaultTrimLength", 40);
-
-		bugTrackerApp.filter("trimText", function(defaultTrimLength){
-			return function(data, trimLength){
-				trimLength = trimLength || defaultTrimLength;
-				return data.length < trimLength ? data : data.substr(0,trimLength) + '...';
-			};
-		});
-
+		
 		bugTrackerApp.filter('closedCount', function(){
 			return function(bugs){
 				var closedCount = 0;
@@ -179,7 +177,11 @@
 						++closedCount;
 				return closedCount;
 			}
-		})
+		});
+
+		
+
+
 	</script>
 </head>
 <body ng-app="bugTrackerApp">
@@ -218,7 +220,7 @@
 					<span class="bugname" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">
 						{{bug.name | trimText:30}}
 					</span>
-					<div class="datetime">[CreatedAt]</div>
+					<div class="datetime">{{bug.createdAt | elapsed}}</div>
 				</li>
 				
 			</ol>
