@@ -13,23 +13,65 @@ var pgm = (function(){
 		console.log('[Consumer] result = ', result);
 	}
 
-	function addAsync(x,y){
+	function addAsync(x,y, onResult){
 		console.log('		[Service] processing ', x , ' and ', y);
 		setTimeout(function(){
 			var result = x + y;
 			console.log('		[Service] returning result');
-			return result;	
+			if (typeof onResult === 'function')
+				onResult(result);
 		}, 3000);
 	}
 
 
 	function addAsyncClient(x,y){
 		console.log('[Consumer] triggering addAsync');
-		var result = addAsync(x,y);
-		console.log('[Consumer] result = ', result);
+		addAsync(x,y, function(result){
+			console.log('[Consumer] result = ', result);	
+		});
+		
 	}
+
+	var addAsyncEvents = (function(){
+		var listeners = [];
+		function subscribe(subscriptionFn){
+			listeners.push(subscriptionFn);
+		}
+		function add(x,y){
+			console.log('		[Service] processing ', x , ' and ', y);
+			setTimeout(function(){
+				var result = x + y;
+				console.log('		[Service] returning result');
+				listeners.forEach(function(listenerFn){
+					if (typeof listenerFn === 'function')
+						listenerFn(result);
+				})
+			}, 3000);
+		}
+		return {
+			subscribe : subscribe,
+			add : add
+		}
+	})();
+
+
+
 	return {
 		addSyncClient : addSyncClient,
-		addAsyncClient : addAsyncClient
+		addAsyncClient : addAsyncClient,
+		addAsyncEvents : addAsyncEvents
 	}
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
