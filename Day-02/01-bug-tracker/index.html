@@ -80,9 +80,10 @@
 		
 		bugTrackerApp.factory("bugOperations", function(defaultBugName){
 			return {
-				createNew : function(bugName){
+				createNew : function(id, bugName){
 					
 					return {
+						id : id,
 						name : bugName || defaultBugName,
 						isClosed : false
 					};
@@ -93,30 +94,71 @@
 			}
 		});
 
+		bugTrackerApp.factory("bugStorage", function(bugOperations){
+			var maxBugId = 0;
+			var storage = window.localStorage;
+
+			function addNewBug(bugName){
+				var newBug = bugOperations.createNew(++maxBugId, bugName);
+				saveBug(newBug);
+				return newBug;
+			}
+
+			function saveBug(bug){
+				storage.setItem(bug.id, angular.toJson(bug));
+			}
+
+			function toggleBug(bug){
+				bugOperations.toggle(bug);
+				saveBug(bug);
+			}
+
+			function removeBug(bug){
+				storage.removeItem(bug.id);
+			}
+
+			function getAllBugs(){
+				var result = [];
+				for(var i=0; i < storage.length; i++){
+					var key = storage.key(i);
+					var dataAsString = storage.getItem(key);
+					var bug = angular.fromJson(dataAsString);
+					maxBugId = maxBugId > bug.id ? maxBugId : bug.id;
+					result.push(bug);
+				}
+				return result;
+
+			}
+
+			return {
+				addNew : addNewBug,
+				toggle : toggleBug,
+				remove : removeBug,
+				getAll : getAllBugs
+			}
+		});
 
 
-		bugTrackerApp.controller('bugsController', function($scope, bugOperations){
+		bugTrackerApp.controller('bugsController', function($scope, bugStorage){
 			
-			$scope.bugs = [
-				bugOperations.createNew('Server communication failure'),
-				bugOperations.createNew('User actions not recognized'),
-				bugOperations.createNew('Data validation error')
-			];
+			$scope.bugs = bugStorage.getAll();
 			
 			$scope.addNew = function(bugName){
-				var newBug = bugOperations.createNew(bugName);
+				var newBug = bugStorage.addNew(bugName);
 				$scope.bugs.push(newBug);
 			};
 
 			$scope.toggle = function(bug){
-				bugOperations.toggle(bug);
+				bugStorage.toggle(bug);
 			};
 
 			
 			$scope.removeClosed = function(){
 				for(var i=$scope.bugs.length-1; i >=0; i--)
-					if ($scope.bugs[i].isClosed)
+					if ($scope.bugs[i].isClosed){
+						bugStorage.remove($scope.bugs[i]);
 						$scope.bugs.splice(i,1);
+					}
 			};
 		});
 
@@ -143,7 +185,6 @@
 <body ng-app="bugTrackerApp">
 	<h1>Bug Tracker</h1>
 	<hr>
-	<input type="text" ng-model="dummy.name">
 	<div class="content" ng-controller="bugsController">
 		<section class="stats">
 			<span class="closed">{{ bugs | closedCount }}</span>
