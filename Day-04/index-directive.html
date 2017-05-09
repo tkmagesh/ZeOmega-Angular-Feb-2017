@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Directive Demo</title>
+	<script src="angular.js"></script>
+	<script>
+		angular
+			.module('myApp', [])
+			.run(function($rootScope){
+				$rootScope.changeMessage = function(){
+					var newMessage = prompt('Enter the new message');
+					$rootScope.greetMessage = newMessage;
+				};
+
+				$rootScope.onMessageClear = function(){
+					console.log('[@rootScope] clear message received');
+				};
+			})
+			/*.directive('helloWorld', function(){
+				return function($scope, $element, $attr){
+					$scope.$watch('greetMessage', function(newValue){
+						$element.html(newValue);	
+					})
+					
+					$element.on('click', function(){
+						console.log('I have been clicked');
+					});
+				};
+			});*/
+			.directive('helloWorld', function(){
+				return {
+					restrict : 'EA',
+					template : '<h1>{{msg}}</h1><input type="button" value="clear" ng-click="clearMessage()" />',
+					//scope : true,
+					scope : {
+						'msg' : '=',
+						'onClear' : '&'
+					},
+					link : function($scope, $element, $attr){
+						$element.on('click', function(){
+							console.log('I have been clicked');
+							
+						});
+						$scope.clearMessage = function(){
+							$scope.msg = '';
+							$scope.onClear();
+						}
+					}
+				}
+			})
+	</script>
+</head>
+<body ng-app="myApp" ng-init="greetMessage='Welcome to Directives!'">
+	<input type="button" value="Change Message" ng-click="changeMessage()">
+	<div hello-world msg="greetMessage" on-clear="onMessageClear()">[Click Me]</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
